@@ -1,0 +1,28 @@
+let
+    resource = "https://api.manage.microsoft.com/",
+    tokenResponse = Json.Document(Web.Contents("https://login.windows.net/" & #"Azure AD Tenant ID" & "/oauth2/token",
+    [
+        Content = Text.ToBinary(Uri.BuildQueryString(
+            [
+                client_id = #"Azure Application Client ID",
+                resource = resource,
+                grant_type = "client_credentials",
+                client_secret = #"Azure Application Client Secret"
+            ]
+        )),
+        Headers = [Accept = "application/json"], ManualStatusHandling = {400}
+    ])),
+    access_token = tokenResponse[access_token],
+
+    // Making the OData request with the access token included in the Authorization header
+    Source = OData.Feed("https://fef.amsub0302.manage.microsoft.com/ReportingService/DataWarehouseFEService",
+    null,
+    [
+        Implementation="2.0",
+        Query=[#"api-version"="v1.0"],
+        Headers=[Authorization="Bearer " & access_token]
+    ]),
+
+    devices_table = Source{[Name="devices",Signature="table"]}[Data]
+in
+    devices_table
