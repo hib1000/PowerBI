@@ -1,0 +1,26 @@
+let
+    // Step 1: Get Access Token
+    resource = "https://graph.microsoft.com/",
+    tokenResponse = Json.Document(Web.Contents("https://login.windows.net/" & #"Azure AD Tenant ID" & "/oauth2/token",
+    [
+        Content = Text.ToBinary(Uri.BuildQueryString(
+            [
+                client_id = #"Azure Application Client ID",
+                resource = resource,
+                grant_type = "client_credentials",
+                client_secret = #"Azure Application Client Secret"
+            ]
+        )),
+        Headers = [Accept = "application/json"], ManualStatusHandling = {400}
+    ])),
+    access_token = tokenResponse[access_token],
+
+    // Step 2: Call runHuntingQuery Method
+    query_url = "https://graph.microsoft.com/v1.0/security/runHuntingQuery",
+    query_body = "{""Query"": ""DeviceInfo | project Timestamp, DeviceId, DeviceName, ClientVersion, PublicIP, OSArchitecture, OSPlatform, JoinType, AadDeviceId, LoggedOnUsers, RegistryDeviceTag, OSVersion, MachineGroup, ReportId, OnboardingStatus, AdditionalFields, DeviceCategory, DeviceType, DeviceSubtype, Model, Vendor, OSDistribution, OSVersionInfo, MergedDeviceIds, MergedToDeviceId, SensorHealthState, IsExcluded, ExclusionReason, ExposureLevel, AssetValue, DeviceManualTags, DeviceDynamicTags, MitigationStatus, HardwareUuid, CloudPlatforms, AzureVmId, AzureResourceId, AzureVmSubscriptionId, GcpFullResourceName, AwsResourceName, ConnectivityType, HostDeviceId | summarize arg_max(Timestamp, *) by DeviceName""}",
+    run_query = Json.Document(Web.Contents(query_url, [Headers=[#"Content-Type"="application/json", #"Authorization"="Bearer " & access_token], Content=Text.ToBinary(query_body)])),
+    results = run_query[results],
+    table = Table.FromRecords(results),
+    #"Changed Type" = Table.TransformColumnTypes(table,{{"Timestamp", type datetime}})
+in
+    #"Changed Type"
