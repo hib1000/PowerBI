@@ -1,0 +1,7 @@
+Date Difference MECM/Intune = DATEDIFF(MAXX(RELATEDTABLE('MECM - v_CombinedDeviceResources'),'MECM - v_CombinedDeviceResources'[LastActiveTime]),'Intune - Data Warehouse'[lastSyncDateTime],DAY)
+
+Date Difference Intune/Defender = DATEDIFF(MAXX(RELATEDTABLE('Intune - Data Warehouse'),'Intune - Data Warehouse'[lastSyncDateTime]),'Defender - WorkstationDeviceInfo'[Timestamp],DAY)
+
+Date Difference MECM/Defender = DATEDIFF(MAXX(RELATEDTABLE('MECM - v_CombinedDeviceResources'),'MECM - v_CombinedDeviceResources'[LastActiveTime]),'Defender - WorkstationDeviceInfo'[Timestamp],DAY)
+
+Defender 28 Days = IF(DATEDIFF('Defender - WorkstationDeviceInfo'[Timestamp], TODAY(), DAY) <= 28, "Yes", "No")
