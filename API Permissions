@@ -1,0 +1,10 @@
+Regustered App permissions required for Data Warehouse/Graph/Defender API access;
+
+Intune (2)
+get_data_warehouse
+get_device_compliance
+
+Microsoft Graph (3)
+Device.Read.All
+ThreatHunting.Read.All
+User.Read
